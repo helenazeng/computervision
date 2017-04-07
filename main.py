@@ -62,6 +62,7 @@ def train_network(network, X, mask, Y):
     model.fit(X, Y, n_epoch=10, shuffle=True,
               show_metric=True, batch_size=20, snapshot_step=500,
               snapshot_epoch=False, run_id='project_test')
+    return model
 
 
 def load_data():
