@@ -19,8 +19,15 @@ def main(*args):
     model_file = args[1]
     model = load_model(model_file)
 
-    make_predictions(model)
-    evaluate_predictions()
+    if len(args) >= 3 and args[2] == 'submit':
+        print("Running submission version!")
+        test_dir = os.path.join(data_root, 'test', 'color')
+        make_predictions(model, test_dir)
+        print("Done!")
+    else:
+        training_dir = os.path.join(data_root, 'train', 'color')
+        make_predictions(model, training_dir)
+        evaluate_predictions()
 
 
 def load_model(model_file):
@@ -29,12 +36,11 @@ def load_model(model_file):
     model.load(model_file)
     return model
 
-def make_predictions(model):
-    training_dir = os.path.join(data_root, 'train', 'color')
+def make_predictions(model, input_dir):
 
     print('Loading data...')
 
-    images, filenames = load_images_from(training_dir)
+    images, filenames = load_images_from(input_dir)
 
     # remove stale output files at this point
     stale_files = (os.path.join(prediction_dir, f) for f in os.listdir(prediction_dir))
@@ -56,6 +62,13 @@ def make_predictions(model):
 
         for pred, fname in zip(predictions, fbatch):
             val = np.array(pred)
+
+            # Normalize
+            #norms = np.linalg.norm(val, axis=2)
+            #norms = np.reshape(norms, [128, 128, 1])
+            #norm_stack = np.repeat(norms, 3, axis=2)
+            #val = val / norm_stack
+
             mhval = mh.as_rgb(val[:,:,0], val[:,:,1], val[:,:,2])
             out_file = os.path.join(prediction_dir, fname)
             mh.imsave(out_file, mhval)
